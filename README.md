@@ -4,7 +4,13 @@
 
 This is a simple database implementation.
 
-## API
+## Getting Started
+
+```
+npm start
+```
+
+## Instructions
 
 ###### An in-memory database that has the following functions:
 
@@ -34,3 +40,9 @@ Rolls back the most recent transaction. If there is no transaction to rollback, 
 
 ```COMMIT```
 Commits all of the open transactions
+
+## Tests
+
+```
+npm run tests
+```
