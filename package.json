@@ -4,6 +4,7 @@
   "description": "A simple database implementation.",
   "main": "app.js",
   "scripts": {
+    "start": "node app.js",
     "test": "jest"
   },
   "repository": {

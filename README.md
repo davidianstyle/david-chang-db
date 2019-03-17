@@ -7,7 +7,9 @@ This is a simple database implementation.
 ## Getting Started
 
 ```
-npm start
+$ git clone https://github.com/davidianstyle/david-chang-db.git
+$ cd david-chang-db
+$ npm start
 ```
 
 ## Instructions
@@ -44,5 +46,7 @@ Commits all of the open transactions
 ## Tests
 
 ```
-npm run tests
+$ git clone https://github.com/davidianstyle/david-chang-db.git
+$ cd david-chang-db
+$ npm run tests
 ```
