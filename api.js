@@ -137,8 +137,7 @@ api.beginTransaction = () => {
 
 api.rollbackTransaction = () => {
     if (DBVERSIONS.length <= 1) {
-	return "No transactions to rollback";
-	console.log('TRANSACTION NOT FOUND');
+	return "TRANSACTION NOT FOUND";
     }
     else {
 	// Remove most recent workingdb
@@ -150,7 +149,7 @@ api.rollbackTransaction = () => {
 
 api.commitTransaction = () => {
     if (DBVERSIONS.length <= 1) {
-	return "No transactions to commit.";
+	return "NO TRANSACTIONS TO COMMIT";
     }
     else {
 	api.setDB(Object.assign({}, api.getWorkingDB()));

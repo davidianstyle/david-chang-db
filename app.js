@@ -26,7 +26,7 @@ const exitDB = () => {
 // Set some environment variables
 let DEBUG = false;
 
-const run = async () => {
+const run = () => {
     // Show script introduction
     init();
 
