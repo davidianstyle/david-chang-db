@@ -2,12 +2,11 @@ const _ = require("lodash");
 
 var api = {};
 
-// Initialize DB/TMPDB
+// Initialize DB
 let DB = {};
-let TMPDB = {};
+let DBVERSIONS = [DB];
 
 // Initialize environment variables
-let INTRANSACTION = false;
 let VERBOSE = false;
 let DEBUG = false;
 let TESTING = false;
@@ -24,13 +23,10 @@ api.setValue = (name, value, extra) => {
 	return "Must specify 'value'! " + usage;
     }
 
-    // Set value in working database (either DB or TMPDB)
-    if (INTRANSACTION) {
-	TMPDB[name] = value;
-    }
-    else {
-	DB[name] = value;
-    }
+    // Get workingdb and update the value
+    var workingdb = api.getWorkingDB();
+    workingdb[name] = value;
+
     if (VERBOSE) {
 	console.log("Setting '" + name + "' to '" + value + "'");
     }
@@ -46,14 +42,10 @@ api.getValue = (name, extra) => {
 	return "Must specify 'name'! " + usage;
     }
 
-    // Get value from working database (either DB or TMPDB)
+    // Get value from working database
     var value;
-    if (INTRANSACTION) {
-	value = TMPDB[name];
-    }
-    else {
-	value = DB[name];
-    }
+    var workingdb = api.getWorkingDB();
+    value = workingdb[name];
 
     if (!value) {
 	value = 'NULL';
@@ -77,30 +69,17 @@ api.deleteValue = (name, extra) => {
 	return "Must specify 'name' to delete! " + usage;
     }
 
-    // Delete from working database (either DB or TMPDB)
-    if (INTRANSACTION) {
-	if (!TMPDB[name]) {
-	    return "Nothing stored in '" + name + "' to delete";
-	}
-	else {
-	    TMPDB[name] = null;
-	    if (VERBOSE) {
-		console.log("Deleting value stored in '" + name + "'");
-	    }
-	    return true;
-	}
+    // Delete from working database
+    var workingdb = api.getWorkingDB();
+    if (!workingdb[name]) {
+	return "Nothing stored in '" + name + "' to delete";
     }
     else {
-	if (!DB[name]) {
-	    return "Nothing stored in '" + name + "'";
+	workingdb[name] = null;
+	if (VERBOSE) {
+	    console.log("Deleting value stored in '" + name + "'");
 	}
-	else {
-	    DB[name] = null;
-	    if (VERBOSE) {
-		console.log("Deleting value stored in '" + name + "'");
-	    }
-	    return true;
-	}
+	return true;
     }
 }
 
@@ -110,12 +89,8 @@ api.countValue = (value, extra) => {
     }
 
     let lookup = {};
-    if (INTRANSACTION) {
-	lookup = _.invertBy(Object.assign({}, TMPDB));
-    }
-    else {
-	lookup = _.invertBy(Object.assign({}, DB));
-    }
+    var workingdb = api.getWorkingDB();
+    lookup = _.invertBy(Object.assign({}, workingdb));
 
     if (DEBUG) {
 	console.log(lookup);
@@ -134,55 +109,51 @@ api.countValue = (value, extra) => {
     }
 }
 
+api.getWorkingDB = () => {
+    return _.last(DBVERSIONS);
+}
+
+api.getDB = () => {
+    return _.first(DBVERSIONS);
+}
+
+api.getDBVERSIONS = () => {
+    return DBVERSIONS;
+}
+
 api.beginTransaction = () => {
-    if (INTRANSACTION) {
-	return "Already in a transaction. Either COMMIT or ROLLBACK to begin another transaction.";
+    // Set the working DB to match the existing DB
+    var workingdb = Object.assign({}, api.getWorkingDB());
+    if (DEBUG) {
+	console.log("DBVERSIONS: ");
+	console.log(DBVERSIONS);
     }
-    else {
-	// Set environment variable to true
-	INTRANSACTION = true;
 
-	// Set the temporary DB to match the existing DB
-	TMPDB = Object.assign({}, DB);
-	if (DEBUG) {
-	    console.log("Current DB state:");
-	    console.log(DB);
-	}
+    // Push the working DB onto the DBVERSIONS array
+    DBVERSIONS.push(workingdb);
 
-	return true;
-    }
+    return true;
 }
 
 api.rollbackTransaction = () => {
-    if (!INTRANSACTION) {
-	return "Not currently in a transaction. Use BEGIN to start a transaction."
+    if (DBVERSIONS.length <= 1) {
+	return "No transactions to rollback";
 	console.log('TRANSACTION NOT FOUND');
     }
     else {
-	// Reset the state of the temporary DB to match the existing DB
-	TMPDB = Object.assign({}, DB);
-	if (DEBUG) {
-	    console.log("Resetting DB state:");
-	    console.log(DB);
-	}
-	INTRANSACTION = false;
+	// Remove most recent workingdb
+	DBVERSIONS.pop();
 
 	return true;
     }
 }
 
 api.commitTransaction = () => {
-    if (!INTRANSACTION) {
-	return "Not currently in a transaction. Use BEGIN to start a transaction."
+    if (DBVERSIONS.length <= 1) {
+	return "No transactions to commit.";
     }
     else {
-	// Update the DB to the state of the temporary DB
-	DB = Object.assign({}, TMPDB);
-	if (DEBUG) {
-	    console.log("Current DB state:");
-	    console.log(DB);
-	}
-	INTRANSACTION = false;
+	api.setDB(Object.assign({}, api.getWorkingDB()));
 
 	return true;
     }
@@ -192,24 +163,22 @@ api.dumpDB = () => {
     console.log(DB);
 }
 
-api.dumpTMPDB = () => {
-    console.log(TMPDB);
-}
-
-api.getDB = () => {
-    return DB;
-}
-
-api.getTMPDB = () => {
-    return TMPDB;
+api.dumpDBVERSIONS = () => {
+    console.log(DBVERSIONS);
 }
 
 api.resetDB = () => {
-    DB = {};
+    api.setDB({});
+    api.resetDBVERSIONS();
 }
 
-api.resetTMPDB = () => {
-    TMPDB = {};
+api.setDB = (db) => {
+    DB = db;
+    api.resetDBVERSIONS();
+}
+
+api.resetDBVERSIONS = () => {
+    DBVERSIONS = [DB];
 }
 
 api.setVerbose = (value) => {

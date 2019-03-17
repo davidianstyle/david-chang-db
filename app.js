@@ -26,7 +26,7 @@ const exitDB = () => {
 // Set some environment variables
 let DEBUG = false;
 
-const run = () => {
+const run = async () => {
     // Show script introduction
     init();
 
@@ -69,8 +69,8 @@ const run = () => {
 			return dbapi.commitTransaction();
 		    case "DUMPDB":
 			return dbapi.dumpDB();
-		    case "DUMPTMPDB":
-			return dbapi.dumpTMPDB();
+		    case "DUMPDBVERSIONS":
+			return dbapi.dumpDBVERSIONS();
 		    default:
 			return "Invalid command: '" + command + "'";
 		    }
