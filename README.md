@@ -50,3 +50,12 @@ $ git clone https://github.com/davidianstyle/david-chang-db.git
 $ cd david-chang-db
 $ npm run tests
 ```
+
+## Dependencies
+
+```lodash.js``` [Lodash.js](https://lodash.com/) simple Javascript utilities
+```underscore.js``` [Underscore.js](https://underscorejs.org/) simple Javascript utilities
+```inquirer.js``` [Inquirer.js](https://www.npmjs.com/package/inquirer) User prompts
+```inquirer-recursive.js``` [inquirer-recursive](https://www.npmjs.com/package/inquirer-recursive) Recursive user prompts (forked version)
+```chalk``` [chalk](https://www.npmjs.com/package/chalk) Colorful GUI
+```figlet``` [figlet](https://www.npmjs.com/package/figlet) ASCII art from text
