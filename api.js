@@ -44,7 +44,7 @@ api.getValue = (name, extra) => {
 
     // Get value from working database
     var value;
-    var workingdb = api.getWorkingDB();
+    var workingdb = api.getFlattenedDB();
     value = workingdb[name];
 
     if (!value) {
@@ -71,16 +71,11 @@ api.deleteValue = (name, extra) => {
 
     // Delete from working database
     var workingdb = api.getWorkingDB();
-    if (!workingdb[name]) {
-	return "Nothing stored in '" + name + "' to delete";
+    workingdb[name] = '';
+    if (VERBOSE) {
+	console.log("Deleting value stored in '" + name + "'");
     }
-    else {
-	workingdb[name] = null;
-	if (VERBOSE) {
-	    console.log("Deleting value stored in '" + name + "'");
-	}
-	return true;
-    }
+    return true;
 }
 
 api.countValue = (value, extra) => {
@@ -89,7 +84,7 @@ api.countValue = (value, extra) => {
     }
 
     let lookup = {};
-    var workingdb = api.getWorkingDB();
+    var workingdb = api.getFlattenedDB();
     lookup = _.invertBy(Object.assign({}, workingdb));
 
     if (DEBUG) {
@@ -113,6 +108,14 @@ api.getWorkingDB = () => {
     return _.last(DBVERSIONS);
 }
 
+api.getFlattenedDB = () => {
+    var db = {};
+    for (var i in DBVERSIONS) {
+	db = _.extend(db, DBVERSIONS[i]);
+    }
+    return db;
+}
+
 api.getDB = () => {
     return _.first(DBVERSIONS);
 }
@@ -122,8 +125,8 @@ api.getDBVERSIONS = () => {
 }
 
 api.beginTransaction = () => {
-    // Set the working DB to match the existing DB
-    var workingdb = Object.assign({}, api.getWorkingDB());
+    // Initialize a new working DB
+    var workingdb = {};
     if (DEBUG) {
 	console.log("DBVERSIONS: ");
 	console.log(DBVERSIONS);
@@ -152,7 +155,8 @@ api.commitTransaction = () => {
 	return "NO TRANSACTIONS TO COMMIT";
     }
     else {
-	api.setDB(Object.assign({}, api.getWorkingDB()));
+	// Flatten the DBVERSIONS array by overlaying all the changes sequentially
+	api.setDB(api.getFlattenedDB());
 
 	return true;
     }
