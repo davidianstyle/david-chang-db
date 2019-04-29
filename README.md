@@ -9,6 +9,7 @@ This is a simple database implementation.
 ```
 $ git clone https://github.com/davidianstyle/david-chang-db.git
 $ cd david-chang-db
+# npm install
 $ npm start
 ```
 
